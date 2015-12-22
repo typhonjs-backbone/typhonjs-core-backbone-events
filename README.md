@@ -20,3 +20,5 @@ TyphonEvents adds new functionality for triggering events. The following are new
 a single promise to the callee.
 
 [mainEventbus.js](https://github.com/typhonjs/typhonjs-core-backbone-events/blob/master/src/mainEventbus.js) provides a standardized instance of TyphonEvents which serves as the name implies a main eventbus. In several TyphonJS repos it is mapped via JSPM to 'mainEventbus' such that one can import it via `import eventbus from 'mainEventbus';`
+
+A [typhonjs-core-logging](https://github.com/typhonjs/typhonjs-core-logging) enabled version of TyphonEvents is available in the [typhonjs-core-backbone-events-logged](https://github.com/typhonjs/typhonjs-core-backbone-events-logged) repo.
