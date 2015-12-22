@@ -7,7 +7,7 @@
 
 var sh = require('./sh');
 
-var mochaOption = " ./test/src/*.js";
+var mochaOption = " --timeout 15000 ./test/src/*.js";
 
 if (process.env.TRAVIS)
 {
