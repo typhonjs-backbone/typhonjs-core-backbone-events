@@ -10,3 +10,11 @@
 
 
 Separates 'Events' support from [backbone-es6](https://github.com/typhonjs/backbone-es6) in addition to adding TyphonJS extensions found in [TyphonEvents](https://github.com/typhonjs/typhonjs-core-backbone-events/blob/master/src/TyphonEvents.js). The events dispatch functionality is useful well outside the context of Backbone and is utilized across several TyphonJS repos.
+
+TyphonEvents adds new functionality for triggering events. The following are new trigger mechanisms:
+
+- `triggerDefer` - Defers invoking `trigger`.
+- `triggerFirst` - Only invokes the first target matched and passes back any result to the callee.
+- `triggerResults` - Invokes all targets matched and passes back an array of results in an array to the callee.
+- `triggerThen` - Invokes all targets matched and adds any returned results through `Promise.all` which returns
+a single promise to the callee.
