@@ -7,7 +7,7 @@
 
 var sh = require('./sh');
 
-var mochaOption = " --timeout 15000 ./test/src/*.js";
+var mochaOption = "--timeout 15000 ./test/src/*.js";
 
 if (process.env.TRAVIS)
 {
@@ -23,5 +23,5 @@ else if(process.argv.indexOf('--coverage') !== -1)
 }
 else
 {
-   sh.exec('babel-node ./node_modules/.bin/mocha --compilers js:babel-core/register -- ' + mochaOption);
+   sh.exec('babel-node ./node_modules/.bin/_mocha ' + mochaOption);
 }
