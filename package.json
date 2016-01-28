@@ -9,6 +9,7 @@
     "url": "https://github.com/typhonjs/typhonjs-core-backbone-events/typhonjs-core-backbone-events.git"
   },
   "jspm": {
+    "main": false,
     "dependencies": {
       "underscore": "npm:underscore@^1.8.3"
     },
