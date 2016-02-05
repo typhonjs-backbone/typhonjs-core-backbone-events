@@ -1,7 +1,7 @@
 ![typhonjs-core-backbone-events](http://i.imgur.com/kPGtJnx.png)
 
 [![Backbone](https://img.shields.io/badge/backbone-1.2.3-yellowgreen.svg?style=flat)](https://github.com/jashkenas/backbone)
-[![Documentation](http://js.docs.typhonrt.org/typhonjs-core-backbone-events/badge.svg)](http://js.docs.typhonrt.org/typhonjs-core-backbone-events/)
+[![Documentation](http://js.docs.typhonrt.org/typhonjs/typhonjs-core-backbone-events/badge.svg)](http://js.docs.typhonrt.org/typhonjs/typhonjs-core-backbone-events/)
 [![Code Style](https://img.shields.io/badge/code%20style-allman-yellowgreen.svg?style=flat)](https://en.wikipedia.org/wiki/Indent_style#Allman_style)
 [![License](https://img.shields.io/badge/license-MIT-yellowgreen.svg?style=flat)](https://github.com/typhonjs/backbone-es6/blob/master/LICENSE)
 
