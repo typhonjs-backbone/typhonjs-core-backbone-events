@@ -5,7 +5,7 @@
 [![Code Style](https://img.shields.io/badge/code%20style-allman-yellowgreen.svg?style=flat)](https://en.wikipedia.org/wiki/Indent_style#Allman_style)
 [![License](https://img.shields.io/badge/license-MIT-yellowgreen.svg?style=flat)](https://github.com/typhonjs/backbone-es6/blob/master/LICENSE)
 
-[![Build Status](https://travis-ci.org/typhonjs/typhonjs-core-backbone-events.svg)](https://travis-ci.org/typhonjs/typhonjs-core-backbone-events)
+[![Build Status](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events.svg?branch=master)](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events)
 [![Dependency Status](https://www.versioneye.com/user/projects/5678f822107997002d001331/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5678f822107997002d001331)
 
 
