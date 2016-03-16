@@ -60,6 +60,7 @@ export default class TyphonEvents extends Events
     */
    triggerFirst(name)
    {
+      /* istanbul ignore if */
       if (!this._events) { return null; }
 
       const length = Math.max(0, arguments.length - 1);
@@ -78,6 +79,7 @@ export default class TyphonEvents extends Events
     */
    triggerResults(name)
    {
+      /* istanbul ignore if */
       if (!this._events) { return []; }
 
       const length = Math.max(0, arguments.length - 1);
@@ -97,6 +99,7 @@ export default class TyphonEvents extends Events
     */
    triggerThen(name)
    {
+      /* istanbul ignore if */
       if (!this._events) { Promise.all([]); }
 
       const length = Math.max(0, arguments.length - 1);
@@ -435,7 +438,7 @@ const s_TRIGGER_THEN_EVENTS = (events, args) =>
             break;
       }
    }
-   catch(error)
+   catch (error)
    {
       return Promise.reject(error);
    }

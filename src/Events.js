@@ -109,6 +109,7 @@ const s_OFF_API = (events, name, callback, options) =>
       const handlers = events[name];
 
       // Bail out if there are no events stored.
+      /* istanbul ignore if */
       if (!handlers) { break; }
 
       // Replace events if there are any remaining.  Otherwise, clean up.
@@ -411,6 +412,7 @@ export default class Events
     */
    off(name, callback, context)
    {
+      /* istanbul ignore if */
       if (!this._events) { return this; }
       this._events = s_EVENTS_API(s_OFF_API, this._events, name, callback, { context, listeners: this._listeners });
       return this;
@@ -523,6 +525,7 @@ export default class Events
     */
    trigger(name)
    {
+      /* istanbul ignore if */
       if (!this._events) { return this; }
 
       const length = Math.max(0, arguments.length - 1);

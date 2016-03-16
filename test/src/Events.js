@@ -1,5 +1,7 @@
-import { assert } from 'chai';
-import jspm       from 'jspm';
+import { assert }                from 'chai';
+import jspm                      from 'jspm';
+
+import instrumentIstanbulSystem  from 'typhonjs-istanbul-instrument-jspm';
 
 /* eslint-disable no-undef */
 
@@ -8,6 +10,9 @@ jspm.setPackagePath(process.cwd());
 
 // Create SystemJS Loader
 const System = new jspm.Loader();
+
+// Replaces System.translate with version that provides Istanbul instrumentation.
+instrumentIstanbulSystem(System);
 
 describe('Events', () =>
 {
