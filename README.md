@@ -8,8 +8,7 @@
 
 [![Build Status](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events.svg)](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events)
 [![Coverage](https://img.shields.io/codecov/c/github/typhonjs-backbone/typhonjs-core-backbone-events.svg)](https://codecov.io/github/typhonjs-backbone/typhonjs-core-backbone-events)
-[![Dependency Status](https://www.versioneye.com/user/projects/5678f822107997002d001331/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5678f822107997002d001331)
-
+[![Dependency Status](https://www.versioneye.com/user/projects/56e8e67d4e714c0034fed4f2/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56e8e67d4e714c0034fed4f2)
 
 Separates 'Events' support from [backbone-es6](https://github.com/typhonjs-backbone/backbone-es6) in addition to adding TyphonJS extensions found in [TyphonEvents](https://github.com/typhonjs-backbone/typhonjs-core-backbone-events/blob/master/src/TyphonEvents.js). The events dispatch functionality is useful well outside the context of Backbone and is utilized across several TyphonJS repos.
 
