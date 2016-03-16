@@ -7,6 +7,7 @@
 [![Gitter](https://img.shields.io/gitter/room/typhonjs/TyphonJS.svg)](https://gitter.im/typhonjs/TyphonJS)
 
 [![Build Status](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events.svg)](https://travis-ci.org/typhonjs-backbone/typhonjs-core-backbone-events)
+[![Coverage](https://img.shields.io/codecov/c/github/typhonjs-backbone/typhonjs-core-backbone-events.svg)](https://codecov.io/github/typhonjs-backbone/typhonjs-core-backbone-events)
 [![Dependency Status](https://www.versioneye.com/user/projects/5678f822107997002d001331/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5678f822107997002d001331)
 
 
