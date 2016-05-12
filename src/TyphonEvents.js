@@ -145,7 +145,7 @@ const s_EVENTS_API = (iteratee, iterateeTarget, events, name, callback, opts) =>
    }
    else if (name && s_EVENT_SPLITTER.test(name))
    {
-      // Handle space separated event names by delegating them individually.
+      // Handle space-separated event names by delegating them individually.
       for (names = name.split(s_EVENT_SPLITTER); i < names.length; i++)
       {
          events = iteratee(iterateeTarget, events, names[i], callback, opts);

@@ -35,7 +35,7 @@ const s_EVENTS_API = (iteratee, events, name, callback, opts) =>
    }
    else if (name && s_EVENT_SPLITTER.test(name))
    {
-      // Handle space separated event names by delegating them individually.
+      // Handle space-separated event names by delegating them individually.
       for (names = name.split(s_EVENT_SPLITTER); i < names.length; i++)
       {
          events = iteratee(events, names[i], callback, opts);
@@ -146,7 +146,8 @@ const s_OFF_API = (events, name, callback, options) =>
          delete events[name];
       }
    }
-   if (_.size(events)) { return events; }
+
+   return events;
 };
 
 /**
@@ -201,11 +202,11 @@ const s_ONCE_MAP = function(map, name, callback, offer)
  *
  * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} objEvents - Events object
  * @param {string}   name  - Event name
- * @param {function} cb    - Event callback
+ * @param {function} callback - Event callback
  * @param {Array<*>} args  - Event arguments
  * @returns {*}
  */
-const s_TRIGGER_API = (objEvents, name, cb, args) =>
+const s_TRIGGER_API = (objEvents, name, callback, args) =>
 {
    if (objEvents)
    {
@@ -473,7 +474,10 @@ export default class Events
    {
       // Map the event into a `{event: once}` object.
       const events = s_EVENTS_API(s_ONCE_MAP, {}, name, callback, _.bind(this.off, this));
-      return this.on(events, void 0, context);
+
+      if (typeof name === 'string' && (context === null || typeof context === 'undefined')) { callback = void 0; }
+
+      return this.on(events, callback, context);
    }
 
    /**
@@ -509,7 +513,6 @@ export default class Events
 
          listening.obj.off(name, callback, this);
       }
-      if (_.isEmpty(listeningTo)) { this._listeningTo = void 0; }
 
       return this;
    }
