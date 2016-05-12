@@ -6,7 +6,7 @@
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/typhonjs-backbone/typhonjs-core-backbone-events/typhonjs-core-backbone-events.git"
+    "url": "https://github.com/typhonjs-backbone/typhonjs-core-backbone-events.git"
   },
   "bugs": {
     "url": "https://github.com/typhonjs-backbone/typhonjs-core-backbone-events/issues"
