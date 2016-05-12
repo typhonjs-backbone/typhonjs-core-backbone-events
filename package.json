@@ -12,6 +12,7 @@
     "url": "https://github.com/typhonjs-backbone/typhonjs-core-backbone-events/issues"
   },
   "jspm": {
+    "main": false,
     "dependencies": {
       "underscore": "npm:underscore@^1.8.3"
     },
