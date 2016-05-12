@@ -2,255 +2,6 @@
 
 import _ from 'underscore';
 
-// Private / internal methods ---------------------------------------------------------------------------------------
-
-/**
- * Regular expression used to split event strings.
- * @type {RegExp}
- */
-const s_EVENT_SPLITTER = /\s+/;
-
-/**
- * Iterates over the standard `event, callback` (as well as the fancy multiple space-separated events `"change blur",
- * callback` and jQuery-style event maps `{event: callback}`).
- *
- * @param {function} iteratee    - Event operation to invoke.
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
- * @param {string|object} name   - A single event name, compound event names, or a hash of event names.
- * @param {function} callback    - Event callback function
- * @param {object}   opts        - Optional parameters
- * @returns {*}
- */
-const s_EVENTS_API = (iteratee, events, name, callback, opts) =>
-{
-   let i = 0, names;
-   if (name && typeof name === 'object')
-   {
-      // Handle event maps.
-      if (callback !== void 0 && 'context' in opts && opts.context === void 0) { opts.context = callback; }
-      for (names = _.keys(name); i < names.length; i++)
-      {
-         events = s_EVENTS_API(iteratee, events, names[i], name[names[i]], opts);
-      }
-   }
-   else if (name && s_EVENT_SPLITTER.test(name))
-   {
-      // Handle space-separated event names by delegating them individually.
-      for (names = name.split(s_EVENT_SPLITTER); i < names.length; i++)
-      {
-         events = iteratee(events, names[i], callback, opts);
-      }
-   }
-   else
-   {
-      // Finally, standard events.
-      events = iteratee(events, name, callback, opts);
-   }
-   return events;
-};
-
-/**
- * Guard the `listening` argument from the public API.
- *
- * @param {Events}   obj      - The Events instance
- * @param {string}   name     - Event name
- * @param {function} callback - Event callback
- * @param {object}   context  - Event context
- * @param {Object.<{obj: object, objId: string, id: string, listeningTo: object, count: number}>} listening -
- *                              Listening object
- * @returns {*}
- */
-const s_INTERNAL_ON = (obj, name, callback, context, listening) =>
-{
-   obj._events = s_EVENTS_API(s_ON_API, obj._events || {}, name, callback, { context, ctx: obj, listening });
-
-   if (listening)
-   {
-      const listeners = obj._listeners || (obj._listeners = {});
-      listeners[listening.id] = listening;
-   }
-
-   return obj;
-};
-
-/**
- * The reducing API that removes a callback from the `events` object.
- *
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
- * @param {string}   name     - Event name
- * @param {function} callback - Event callback
- * @param {object}   options  - Optional parameters
- * @returns {*}
- */
-const s_OFF_API = (events, name, callback, options) =>
-{
-   if (!events) { return; }
-
-   let i = 0, listening;
-   const context = options.context, listeners = options.listeners;
-
-   // Delete all events listeners and "drop" events.
-   if (!name && !callback && !context)
-   {
-      const ids = _.keys(listeners);
-      for (; i < ids.length; i++)
-      {
-         listening = listeners[ids[i]];
-         delete listeners[listening.id];
-         delete listening.listeningTo[listening.objId];
-      }
-      return;
-   }
-
-   const names = name ? [name] : _.keys(events);
-   for (; i < names.length; i++)
-   {
-      name = names[i];
-      const handlers = events[name];
-
-      // Bail out if there are no events stored.
-      /* istanbul ignore if */
-      if (!handlers) { break; }
-
-      // Replace events if there are any remaining.  Otherwise, clean up.
-      const remaining = [];
-      for (let j = 0; j < handlers.length; j++)
-      {
-         const handler = handlers[j];
-         if (
-          callback && callback !== handler.callback &&
-          callback !== handler.callback._callback ||
-          context && context !== handler.context
-         )
-         {
-            remaining.push(handler);
-         }
-         else
-         {
-            listening = handler.listening;
-            if (listening && --listening.count === 0)
-            {
-               delete listeners[listening.id];
-               delete listening.listeningTo[listening.objId];
-            }
-         }
-      }
-
-      // Update tail event if the list has any events.  Otherwise, clean up.
-      if (remaining.length)
-      {
-         events[name] = remaining;
-      }
-      else
-      {
-         delete events[name];
-      }
-   }
-
-   return events;
-};
-
-/**
- * The reducing API that adds a callback to the `events` object.
- *
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
- * @param {string}   name     - Event name
- * @param {function} callback - Event callback
- * @param {object}   options  - Optional parameters
- * @returns {*}
- */
-const s_ON_API = (events, name, callback, options) =>
-{
-   if (callback)
-   {
-      const handlers = events[name] || (events[name] = []);
-      const context = options.context, ctx = options.ctx, listening = options.listening;
-
-      if (listening) { listening.count++; }
-
-      handlers.push({ callback, context, ctx: context || ctx, listening });
-   }
-   return events;
-};
-
-/**
- * Reduces the event callbacks into a map of `{event: onceWrapper}`. `offer` unbinds the `onceWrapper` after
- * it has been called.
- *
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} map - Events object
- * @param {string}   name     - Event name
- * @param {function} callback - Event callback
- * @param {function} offer    - Function to invoke after event has been triggered once; `off()`
- * @returns {*}
- */
-const s_ONCE_MAP = function(map, name, callback, offer)
-{
-   if (callback)
-   {
-      const once = map[name] = _.once(function()
-      {
-         offer(name, once);
-         callback.apply(this, arguments);
-      });
-      once._callback = callback;
-   }
-   return map;
-};
-
-/**
- * Handles triggering the appropriate event callbacks.
- *
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} objEvents - Events object
- * @param {string}   name  - Event name
- * @param {function} callback - Event callback
- * @param {Array<*>} args  - Event arguments
- * @returns {*}
- */
-const s_TRIGGER_API = (objEvents, name, callback, args) =>
-{
-   if (objEvents)
-   {
-      const events = objEvents[name];
-      let allEvents = objEvents.all;
-      if (events && allEvents) { allEvents = allEvents.slice(); }
-      if (events) { s_TRIGGER_EVENTS(events, args); }
-      if (allEvents) { s_TRIGGER_EVENTS(allEvents, [name].concat(args)); }
-   }
-   return objEvents;
-};
-
-/**
- * A difficult-to-believe, but optimized internal dispatch function for triggering events. Tries to keep the usual
- * cases speedy (most internal Backbone events have 3 arguments).
- *
- * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>}  events - events array
- * @param {Array<*>} args - event argument array
- */
-const s_TRIGGER_EVENTS = (events, args) =>
-{
-   let ev, i = -1;
-   const a1 = args[0], a2 = args[1], a3 = args[2], l = events.length;
-
-   switch (args.length)
-   {
-      case 0:
-         while (++i < l) { (ev = events[i]).callback.call(ev.ctx); }
-         return;
-      case 1:
-         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1); }
-         return;
-      case 2:
-         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1, a2); }
-         return;
-      case 3:
-         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); }
-         return;
-      default:
-         while (++i < l) { (ev = events[i]).callback.apply(ev.ctx, args); }
-         return;
-   }
-};
-
 /**
  * Backbone.Events - Provides the ability to bind and trigger custom named events. (http://backbonejs.org/#Events)
  * ---------------
@@ -552,3 +303,252 @@ export default class Events
       return this.off(...arguments);
    }
 }
+
+// Private / internal methods ---------------------------------------------------------------------------------------
+
+/**
+ * Regular expression used to split event strings.
+ * @type {RegExp}
+ */
+const s_EVENT_SPLITTER = /\s+/;
+
+/**
+ * Iterates over the standard `event, callback` (as well as the fancy multiple space-separated events `"change blur",
+ * callback` and jQuery-style event maps `{event: callback}`).
+ *
+ * @param {function} iteratee    - Event operation to invoke.
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
+ * @param {string|object} name   - A single event name, compound event names, or a hash of event names.
+ * @param {function} callback    - Event callback function
+ * @param {object}   opts        - Optional parameters
+ * @returns {*}
+ */
+const s_EVENTS_API = (iteratee, events, name, callback, opts) =>
+{
+   let i = 0, names;
+   if (name && typeof name === 'object')
+   {
+      // Handle event maps.
+      if (callback !== void 0 && 'context' in opts && opts.context === void 0) { opts.context = callback; }
+      for (names = _.keys(name); i < names.length; i++)
+      {
+         events = s_EVENTS_API(iteratee, events, names[i], name[names[i]], opts);
+      }
+   }
+   else if (name && s_EVENT_SPLITTER.test(name))
+   {
+      // Handle space-separated event names by delegating them individually.
+      for (names = name.split(s_EVENT_SPLITTER); i < names.length; i++)
+      {
+         events = iteratee(events, names[i], callback, opts);
+      }
+   }
+   else
+   {
+      // Finally, standard events.
+      events = iteratee(events, name, callback, opts);
+   }
+   return events;
+};
+
+/**
+ * Guard the `listening` argument from the public API.
+ *
+ * @param {Events}   obj      - The Events instance
+ * @param {string}   name     - Event name
+ * @param {function} callback - Event callback
+ * @param {object}   context  - Event context
+ * @param {Object.<{obj: object, objId: string, id: string, listeningTo: object, count: number}>} listening -
+ *                              Listening object
+ * @returns {*}
+ */
+const s_INTERNAL_ON = (obj, name, callback, context, listening) =>
+{
+   obj._events = s_EVENTS_API(s_ON_API, obj._events || {}, name, callback, { context, ctx: obj, listening });
+
+   if (listening)
+   {
+      const listeners = obj._listeners || (obj._listeners = {});
+      listeners[listening.id] = listening;
+   }
+
+   return obj;
+};
+
+/**
+ * The reducing API that removes a callback from the `events` object.
+ *
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
+ * @param {string}   name     - Event name
+ * @param {function} callback - Event callback
+ * @param {object}   options  - Optional parameters
+ * @returns {*}
+ */
+const s_OFF_API = (events, name, callback, options) =>
+{
+   if (!events) { return; }
+
+   let i = 0, listening;
+   const context = options.context, listeners = options.listeners;
+
+   // Delete all events listeners and "drop" events.
+   if (!name && !callback && !context)
+   {
+      const ids = _.keys(listeners);
+      for (; i < ids.length; i++)
+      {
+         listening = listeners[ids[i]];
+         delete listeners[listening.id];
+         delete listening.listeningTo[listening.objId];
+      }
+      return;
+   }
+
+   const names = name ? [name] : _.keys(events);
+   for (; i < names.length; i++)
+   {
+      name = names[i];
+      const handlers = events[name];
+
+      // Bail out if there are no events stored.
+      /* istanbul ignore if */
+      if (!handlers) { break; }
+
+      // Replace events if there are any remaining.  Otherwise, clean up.
+      const remaining = [];
+      for (let j = 0; j < handlers.length; j++)
+      {
+         const handler = handlers[j];
+         if (
+          callback && callback !== handler.callback &&
+          callback !== handler.callback._callback ||
+          context && context !== handler.context
+         )
+         {
+            remaining.push(handler);
+         }
+         else
+         {
+            listening = handler.listening;
+            if (listening && --listening.count === 0)
+            {
+               delete listeners[listening.id];
+               delete listening.listeningTo[listening.objId];
+            }
+         }
+      }
+
+      // Update tail event if the list has any events.  Otherwise, clean up.
+      if (remaining.length)
+      {
+         events[name] = remaining;
+      }
+      else
+      {
+         delete events[name];
+      }
+   }
+
+   return events;
+};
+
+/**
+ * The reducing API that adds a callback to the `events` object.
+ *
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} events - Events object
+ * @param {string}   name     - Event name
+ * @param {function} callback - Event callback
+ * @param {object}   options  - Optional parameters
+ * @returns {*}
+ */
+const s_ON_API = (events, name, callback, options) =>
+{
+   if (callback)
+   {
+      const handlers = events[name] || (events[name] = []);
+      const context = options.context, ctx = options.ctx, listening = options.listening;
+
+      if (listening) { listening.count++; }
+
+      handlers.push({ callback, context, ctx: context || ctx, listening });
+   }
+   return events;
+};
+
+/**
+ * Reduces the event callbacks into a map of `{event: onceWrapper}`. `offer` unbinds the `onceWrapper` after
+ * it has been called.
+ *
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} map - Events object
+ * @param {string}   name     - Event name
+ * @param {function} callback - Event callback
+ * @param {function} offer    - Function to invoke after event has been triggered once; `off()`
+ * @returns {*}
+ */
+const s_ONCE_MAP = function(map, name, callback, offer)
+{
+   if (callback)
+   {
+      const once = map[name] = _.once(function()
+      {
+         offer(name, once);
+         callback.apply(this, arguments);
+      });
+      once._callback = callback;
+   }
+   return map;
+};
+
+/**
+ * Handles triggering the appropriate event callbacks.
+ *
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>} objEvents - Events object
+ * @param {string}   name  - Event name
+ * @param {function} callback - Event callback
+ * @param {Array<*>} args  - Event arguments
+ * @returns {*}
+ */
+const s_TRIGGER_API = (objEvents, name, callback, args) =>
+{
+   if (objEvents)
+   {
+      const events = objEvents[name];
+      let allEvents = objEvents.all;
+      if (events && allEvents) { allEvents = allEvents.slice(); }
+      if (events) { s_TRIGGER_EVENTS(events, args); }
+      if (allEvents) { s_TRIGGER_EVENTS(allEvents, [name].concat(args)); }
+   }
+   return objEvents;
+};
+
+/**
+ * A difficult-to-believe, but optimized internal dispatch function for triggering events. Tries to keep the usual
+ * cases speedy (most internal Backbone events have 3 arguments).
+ *
+ * @param {Object.<{callback: function, context: object, ctx: object, listening:{}}>}  events - events array
+ * @param {Array<*>} args - event argument array
+ */
+const s_TRIGGER_EVENTS = (events, args) =>
+{
+   let ev, i = -1;
+   const a1 = args[0], a2 = args[1], a3 = args[2], l = events.length;
+
+   switch (args.length)
+   {
+      case 0:
+         while (++i < l) { (ev = events[i]).callback.call(ev.ctx); }
+         return;
+      case 1:
+         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1); }
+         return;
+      case 2:
+         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1, a2); }
+         return;
+      case 3:
+         while (++i < l) { (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); }
+         return;
+      default:
+         while (++i < l) { (ev = events[i]).callback.apply(ev.ctx, args); }
+         return;
+   }
+};
