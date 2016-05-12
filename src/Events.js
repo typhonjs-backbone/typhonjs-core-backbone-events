@@ -270,20 +270,21 @@ const s_TRIGGER_EVENTS = (events, args) =>
  * "remove" (model, collection, options) — when a model is removed from a collection.
  * "update" (collection, options) — single event triggered after any number of models have been added or removed from a
  * collection.
- * "reset" (collection, options) — when the collection's entire contents have been replaced.
+ * "reset" (collection, options) — when the collection's entire contents have been reset.
  * "sort" (collection, options) — when the collection has been re-sorted.
  * "change" (model, options) — when a model's attributes have changed.
  * "change:[attribute]" (model, value, options) — when a specific attribute has been updated.
  * "destroy" (model, collection, options) — when a model is destroyed.
  * "request" (model_or_collection, xhr, options) — when a model or collection has started a request to the server.
- * "sync" (model_or_collection, resp, options) — when a model or collection has been successfully synced with the
+ * "sync" (model_or_collection, response, options) — when a model or collection has been successfully synced with the
  * server.
- * "error" (model_or_collection, resp, options) — when a model's or collection's request to the server has failed.
+ * "error" (model_or_collection, response, options) — when a model's or collection's request to the server has failed.
  * "invalid" (model, error, options) — when a model's validation fails on the client.
  * "route:[name]" (params) — Fired by the router when a specific route is matched.
  * "route" (route, params) — Fired by the router when any route has been matched.
  * "route" (router, route, params) — Fired by history when any route has been matched.
- * "all" — this special event fires for any triggered event, passing the event name as the first argument.
+ * "all" — this special event fires for any triggered event, passing the event name as the first argument followed by
+ * all trigger arguments.
  *
  * Generally speaking, when calling a function that emits an event (model.set, collection.add, and so on...), if you'd
  * like to prevent the event from being triggered, you may pass {silent: true} as an option. Note that this is rarely,
